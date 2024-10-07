@@ -27,10 +27,10 @@ todo = error "TODO"
 -- There is only one solution each which is a total and terminating.
 -- Follow the types!
 riddleA :: ((a,b) -> c) -> (c -> d) -> (a,b) -> d
-riddleA = todo
+riddleA f g (a, b) = g (f (a, b))
 
 riddleB :: a -> ((a -> b) -> c) -> (a -> a -> b) -> c
-riddleB = todo
+riddleB x f g = f (g x)
 
 -------------------------------------------------------------------------------
 -- 1. Recursion on Lists
@@ -38,7 +38,8 @@ riddleB = todo
 
 -- Implement the function `myLength`. It returns the length of a list:
 myLength :: [a] -> Int
-myLength = todo
+myLength [] = 0
+myLength (_:rest) = 1 + myLength rest
 
 myLengthSpec :: Spec
 myLengthSpec = 
@@ -50,7 +51,8 @@ myLengthSpec =
 
 -- Implement the function myReverse. It reverses a list:
 myReverse :: [a] -> [a]
-myReverse = todo
+myReverse [] = []
+myReverse (x:xs) = myReverse xs ++ [x]
 
 myReverseSpec :: Spec
 myReverseSpec = 
@@ -62,7 +64,9 @@ myReverseSpec =
 -- Implement the function drop. It drops the first n elements.
 -- It returns the list unchanged for negative n.
 myDrop :: Int -> [a] -> [a]
-myDrop = todo
+myDrop _ [] = []
+myDrop n xs | n <= 0 = xs
+myDrop n (_:xs) = myDrop (n - 1) xs
 
 
 myDropSpec :: Spec
@@ -100,7 +104,8 @@ exTree =
 
 -- Implement the function preorder. It traverses a binary tree pre-order:
 preorder :: Bin a -> [a]
-preorder = todo
+preorder (Leaf x) = [x]
+preorder (Fork left value right) = [value] ++ preorder left ++ preorder right
 
 preorderSpec :: Spec
 preorderSpec = 
@@ -112,7 +117,8 @@ preorderSpec =
 
 -- Implement the function inorder. It traverses a binary tree in-order:
 inorder :: Bin a -> [a]
-inorder = todo
+inorder (Leaf x) = [x]
+inorder (Fork left value right) = inorder left ++ [value] ++ inorder right
 
 inorderSpec :: Spec
 inorderSpec = 
@@ -123,7 +129,8 @@ inorderSpec =
 
 -- Implement the function postorder. It traverses a binary tree post-order:
 postorder :: Bin a -> [a]
-postorder = todo
+postorder (Leaf x) = [x]
+postorder (Fork left value right) = postorder left ++ postorder right ++ [value]
 
 postorderSpec :: Spec
 postorderSpec = 
@@ -155,7 +162,10 @@ shorten (n :/: d) = (n `div` f) :/: (d `div` f)
 -- Hint: DIV can easy be implemented by MUL with the reciprocal
 evalOp :: Op -> Rat -> Rat -> Rat  
 evalOp ADD (ln :/: ld) (rn :/: rd) = shorten (((ln * rd) + (rn * ld)) :/: (ld * rd))
-evalOp _   _           _           = todo
+evalOp SUB (ln :/: ld) (rn :/: rd) = shorten (((ln * rd) - (rn * ld)) :/: (ld * rd))
+evalOp MUL (ln :/: ld) (rn :/: rd) = shorten ((ln * rn) :/: (ld * rd))
+evalOp DIV (ln :/: ld) (rn :/: rd) = shorten ((ln * rd) :/: (ld * rn))
+evalOp _   _           _           = 0 :/: 0
 
 evalOpSpec :: Spec
 evalOpSpec = 
@@ -167,7 +177,8 @@ evalOpSpec =
 
 -- Now implement the `eval` function, which evaluates an expression:
 eval :: Expr -> Rat
-eval = todo
+eval (Val r)        = r
+eval (Bin op e1 e2) = evalOp op (eval e1) (eval e2)
 
 -- Example expression:
 -- ((1/2) + (1/4)) * ((1/6) / (2/1))
@@ -208,7 +219,8 @@ languages = [
 -- Implement your own version of the function `map`.
 -- It applies a function to every element in a list.
 myMap :: (a -> b) -> [a] -> [b]
-myMap = todo
+myMap _ [] = []
+myMap f (n:rest) = f n : myMap f rest
 
 myMapSpec :: Spec
 myMapSpec = 
@@ -220,7 +232,10 @@ myMapSpec =
 -- Implement your own version of the function `filter`.
 -- It keeps only the elements which satisfy the predicate.
 myFilter :: (a -> Bool) -> [a] -> [a]
-myFilter = todo
+myFilter _ [] = []
+myFilter f (x:xs)
+    | f x         = x : myFilter f xs
+    | otherwise   = myFilter f xs
 
 myFilterSpec :: Spec
 myFilterSpec = 
@@ -232,7 +247,7 @@ myFilterSpec =
 -- Implement the function `squares`. It squares every element in a list.
 -- Make use of the predefined function `map`:
 squares :: [Int] -> [Int]
-squares = todo
+squares = myMap (\x -> x * x)
 
 squaresSpec :: Spec
 squaresSpec = 
@@ -244,7 +259,7 @@ squaresSpec =
 -- Implement the function `names`. It extracts the names of the languages.
 -- Make use of the predefined function `map`:
 names :: [Language] -> [String]
-names = todo
+names = map name
 
 namesSpec :: Spec
 namesSpec = 
@@ -256,7 +271,7 @@ namesSpec =
 -- Implement the function `evens`. It keeps only the even values of a list.
 -- Use the function `filter` and the `even` function:
 evens :: [Int] -> [Int]
-evens = todo
+evens = filter even
 
 evensSpec :: Spec
 evensSpec = 
@@ -268,7 +283,7 @@ evensSpec =
 -- Implement the function `likes`. It keeps only the functional languages:
 -- Use the function `filter` and write the predicate as a lambda expression:
 likes :: [Language] -> [Language]
-likes = todo
+likes = filter (\l -> paradigm l == Functional)
 
 likesSpec :: Spec
 likesSpec = 
@@ -281,7 +296,7 @@ likesSpec =
 -- Implement the function `foldrLength`. It computes the lengths of a list.
 -- Use the function `foldr`:
 foldrLength :: [a] -> Int
-foldrLength = todo
+foldrLength = foldr (\_ acc -> 1 + acc) 0
 
 foldrLengthSpec :: Spec
 foldrLengthSpec = 
